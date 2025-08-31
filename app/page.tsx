@@ -1,161 +1,92 @@
-'use client';
-import React, { useEffect, useState, useMemo } from 'react';
-import { fetchUsers } from '../lib/api';
-import type { User } from '../types';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
+import { fetchUsers } from "../lib/api";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter
-} from "@/components/ui/dialog";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Users, UserPlus, Image as ImageIcon } from "lucide-react"; 
 
-const ITEMS_PER_PAGE = 10;
-type SortConfig = { key: keyof User; direction: 'ascending' | 'descending' } | null;
+// Import the enhanced components
+import UsersPerDayChart from '../components/dashboard/UsersPerDayChart';
+import AvatarPieChart from '../components/dashboard/AvatarPieChart';
+import RecentUsersList from '../components/dashboard/RecentUsersList';
 
-export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'createdAt', direction: 'descending' });
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const loadUsers = async () => {
-      setLoading(true);
-      const fetchedUsers = await fetchUsers();
-      setUsers(fetchedUsers);
-      setLoading(false);
-    };
-    loadUsers();
-  }, []);
-
-  const processedUsers = useMemo(() => {
-    let filteredUsers = [...users];
-    if (searchTerm) {
-      filteredUsers = filteredUsers.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (sortConfig !== null) {
-      filteredUsers.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'ascending' ? 1 : -1;
-        return 0;
-      });
-    }
-    return filteredUsers;
-  }, [users, searchTerm, sortConfig]);
-
-  const paginatedUsers = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return processedUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [processedUsers, currentPage]);
-
-  const totalPages = Math.ceil(processedUsers.length / ITEMS_PER_PAGE);
-
-  const requestSort = (key: keyof User) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  if (loading) return <div>Loading...</div>;
+export default async function DashboardPage() {
+  const users = await fetchUsers();
+  const totalUsers = users.length;
+  const usersWithAvatars = users.filter(u => !!u.avatar).length;
+  
+  // Get the 5 most recent users for the new component
+  const recentUsers = [...users]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-        <Input
-          placeholder="Search by name or email..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-sm"
-        />
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">A summary of user activity.</p>
       </div>
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[80px]">Avatar</TableHead>
-              <TableHead onClick={() => requestSort('name')} className="cursor-pointer">Name</TableHead>
-              <TableHead onClick={() => requestSort('email')} className="cursor-pointer">Email</TableHead>
-              <TableHead onClick={() => requestSort('createdAt')} className="cursor-pointer">Joined Date</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedUsers.map((user) => (
-              <TableRow key={user.id} onClick={() => setSelectedUser(user)} className="cursor-pointer">
-                <TableCell>
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
-                </TableCell>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
-
-      <div className="flex items-center justify-center space-x-2">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </Button>
-        <span className="text-sm">
-          Page {currentPage} of {totalPages}
-        </span>
-        <Button
-          variant="outline"
-          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </Button>
+      {/* --- KPI Cards with Icons --- */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalUsers}</div>
+            <p className="text-xs text-muted-foreground">All registered users</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">With Avatars</CardTitle>
+            <ImageIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{usersWithAvatars}</div>
+            <p className="text-xs text-muted-foreground">
+              {((usersWithAvatars / totalUsers) * 100).toFixed(1)}% of users
+            </p>
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Newest Member</CardTitle>
+            <UserPlus className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{recentUsers[0]?.name || 'N/A'}</div>
+            <p className="text-xs text-muted-foreground">The latest user to sign up</p>
+          </CardContent>
+        </Card>
       </div>
-      
-      {/* User Detail Modal */}
-      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{selectedUser?.name}</DialogTitle>
-            <DialogDescription>{selectedUser?.email}</DialogDescription>
-          </DialogHeader>
-          <div className="py-4 text-center">
-            <img src={selectedUser?.avatar} alt={selectedUser?.name} className="h-24 w-24 rounded-full mx-auto mb-4" />
-            <p>Joined on {selectedUser ? new Date(selectedUser.createdAt).toLocaleDateString() : ''}</p>
-          </div>
-          <DialogFooter>
-            <Button onClick={() => setSelectedUser(null)}>Close</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+      {/* --- Main Grid for Charts and Recent Users --- */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
+          <CardHeader>
+            <CardTitle>Users Joined (Last 30 Days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* The chart component itself needs no changes */}
+            <UsersPerDayChart users={users} />
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Recently Joined</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* We will use the new, improved RecentUsersList component */}
+            <RecentUsersList users={recentUsers} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

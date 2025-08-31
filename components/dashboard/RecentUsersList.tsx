@@ -1,31 +1,28 @@
-import React from "react";
-import styles from "./RecentUsersList.module.css"; // Adjust path if needed
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../src/components/ui/avatar";
+import { User } from "../../types"; // Make sure to use your main User type
 
-// Define User type if not imported
-type User = {
-  id: string | number;
-  name: string;
-  avatar?: string;
-};
-
-// ...existing code...
 export default function RecentUsersList({ users }: { users: User[] }) {
   return (
-    <div className={styles.card}>
-      <div className={styles.title}>Recently Joined</div>
-      <div className={styles.list}>
-        {users.map(u => (
-          <div key={u.id} className={styles.item}>
-            <img
-              src={u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}`}
-              alt="avatar"
-              className={styles.avatar}
-            />
-            <span className={styles.name}>{u.name}</span>
+    <div className="space-y-6">
+      {users.map((user) => (
+        <div key={user.id} className="flex items-center">
+          <Avatar className="h-9 w-9">
+            <AvatarImage src={user.avatar} alt="Avatar" />
+            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="ml-4 space-y-1">
+            <p className="text-sm font-medium leading-none">{user.name}</p>
+            <p className="text-sm text-muted-foreground">{user.email}</p>
           </div>
-        ))}
-      </div>
+          <div className="ml-auto font-medium text-sm">
+            {new Date(user.createdAt).toLocaleDateString()}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
-// ...existing code...
