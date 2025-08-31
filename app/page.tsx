@@ -11,9 +11,16 @@ import UsersPerDayChart from '@/components/dashboard/UsersPerDayChart';
 import RecentUsersList from '@/components/dashboard/RecentUsersList';
 import dynamic from 'next/dynamic';
 
+// Dynamic import for the Pie Chart
 const ClientPieChart = dynamic(() => import('@/components/dashboard/client-pie-chart'), {
   ssr: false,
   loading: () => <div className="h-[220px] w-full flex items-center justify-center text-sm text-muted-foreground">Loading Chart...</div>,
+});
+
+// Dynamic import for our new Signup Time Chart
+const ClientSignupTimeChart = dynamic(() => import('@/components/dashboard/client-signup-time-chart'), {
+    ssr: false,
+    loading: () => <div className="h-[260px] w-full flex items-center justify-center text-sm text-muted-foreground">Loading Chart...</div>,
 });
 
 export default async function DashboardPage() {
@@ -30,8 +37,8 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground">A summary of your user base.</p>
       </div>
 
-      
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* KPI Cards... */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
@@ -64,7 +71,6 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-     
       <div className="grid gap-4 lg:grid-cols-7">
         <Card className="lg:col-span-4">
           <CardHeader>
@@ -86,15 +92,27 @@ export default async function DashboardPage() {
         </Card>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle>Recently Joined</CardTitle>
-          <CardDescription>The 5 newest members of your community.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RecentUsersList users={recentUsers} />
-        </CardContent>
-      </Card>
+      {/* --- NEW BOTTOM ROW GRID --- */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
+            <CardHeader>
+                <CardTitle>Recently Joined</CardTitle>
+                <CardDescription>The 5 newest members of your community.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <RecentUsersList users={recentUsers} />
+            </CardContent>
+        </Card>
+        <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>Peak Signup Hours</CardTitle>
+                <CardDescription>Most popular times for user signups.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ClientSignupTimeChart users={users} />
+            </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
