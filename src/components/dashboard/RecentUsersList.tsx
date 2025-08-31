@@ -2,8 +2,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "../../src/components/ui/avatar";
-import { User } from "../../types"; // Make sure to use your main User type
+} from "../ui/avatar";
+import { User } from "../../types";
 
 export default function RecentUsersList({ users }: { users: User[] }) {
   return (

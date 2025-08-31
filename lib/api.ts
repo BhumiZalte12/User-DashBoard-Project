@@ -1,5 +1,5 @@
 import axios from "axios";
-import { User } from "../types";
+import { User } from "../src/types";
 
 const API_URL = "https://6874ce63dd06792b9c954fc7.mockapi.io/api/v1/users";
 

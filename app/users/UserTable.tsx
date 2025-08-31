@@ -1,16 +1,14 @@
 import React, { useState } from 'react';
-import { User } from '../../types';
+import { User } from '../../src/types';
 import styles from './UserTable.module.css';
 
-// Define the shape for our sorting state so it can be used in the Props interface
+
 type SortConfig = {
   key: keyof User;
   direction: 'ascending' | 'descending';
 } | null;
 
-// --- THE FIX IS HERE ---
-// The 'Props' interface was missing 'onSort' and 'sortConfig'.
-// This update tells the component to expect these new props from its parent.
+
 interface Props {
   users: User[];
   onSort: (config: SortConfig) => void;
@@ -20,7 +18,7 @@ interface Props {
 const UserTable: React.FC<Props> = ({ users, onSort, sortConfig }) => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Function to request a sort change from the parent component
+
   const requestSort = (key: keyof User) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
@@ -29,7 +27,7 @@ const UserTable: React.FC<Props> = ({ users, onSort, sortConfig }) => {
     onSort({ key, direction });
   };
 
-  // Function to get the correct arrow indicator for the sorted column
+  
   const getSortIndicator = (key: keyof User) => {
     if (!sortConfig || sortConfig.key !== key) {
       return null;
@@ -78,7 +76,7 @@ const UserTable: React.FC<Props> = ({ users, onSort, sortConfig }) => {
         </tbody>
       </table>
 
-      {/* Modal for user details */}
+      
       {selectedUser && (
         <div className={styles.modalBackdrop} onClick={() => setSelectedUser(null)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
