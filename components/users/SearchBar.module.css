@@ -1,17 +1,15 @@
 .searchBar {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 16px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  max-width: 320px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.sortBox {
-  margin: 10px 0;
-}
-
-.sortSelect {
-  padding: 6px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+.searchBar:focus {
+  outline: none;
+  border-color: var(--accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }

@@ -1,34 +1,51 @@
-import React from "react";
+import React from 'react';
+import styles from './Pagination.module.css';
 
 interface Props {
   currentPage: number;
-  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
   onPageChange: (page: number) => void;
 }
 
 const Pagination: React.FC<Props> = ({
   currentPage,
-  totalPages,
+  totalItems,
+  itemsPerPage,
   onPageChange,
 }) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  if (totalPages <= 1) {
+    return null; // Don't render pagination if there's only one page
+  }
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    onPageChange(page);
+  };
+
   return (
-    <div style={{ marginTop: "20px", textAlign: "center" }}>
-      {Array.from({ length: totalPages }, (_, i) => (
-        <button
-          key={i + 1}
-          onClick={() => onPageChange(i + 1)}
-          style={{
-            margin: "0 4px",
-            padding: "6px 12px",
-            border: "1px solid #ddd",
-            background: currentPage === i + 1 ? "#0070f3" : "#fff",
-            color: currentPage === i + 1 ? "#fff" : "#000",
-            cursor: "pointer",
-          }}
-        >
-          {i + 1}
-        </button>
-      ))}
+    <div className={styles.pagination}>
+      <button
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className={styles.button}
+      >
+        Previous
+      </button>
+
+      <span className={styles.pageInfo}>
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <button
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className={styles.button}
+      >
+        Next
+      </button>
     </div>
   );
 };
